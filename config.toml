@@ -1,0 +1,16 @@
+[data]
+raw_data_dir = "data/1_raw"
+processed_data_dir = "data/2_processed"
+
+[settings]
+start_season = 2000
+end_season = 2025
+request_delay = 1.0
+abort_on_error = true
+
+[assessment]
+preview_rows = 3
+sample_rows = 3
+random_seed = 42
+earliest_date = "2000-10-01"
+latest_date = "2026-06-30"
