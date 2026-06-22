@@ -1,19 +1,31 @@
 """
 Data loading and train/val/test splitting for the NBA prediction pipeline.
 """
+import json
 import logging
 from pathlib import Path
 from typing import Literal, Tuple
 
 import pandas as pd
 
+from src.loader import load_config
+config = load_config()
+
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-# Update this constant whenever the feature dataset is regenerated with a different season range.
-DATASET_VERSION = "2000-01_2025-26"
-FEATURES_PATH = PROJECT_ROOT / "data" / "3_features" / f"features_nba_data_{DATASET_VERSION}.csv"
+# Define dataset version
+start_year = config["settings"]["start_season"]
+end_year   = config["settings"]["end_season"]
+
+start_season = f"{start_year}-{str(start_year + 1)[-2:]}"
+end_season   = f"{end_year}-{str(end_year + 1)[-2:]}"
+
+DATASET_VERSION = f"{start_season}_{end_season}"
+
+# Define features path
+FEATURES_PATH = PROJECT_ROOT / config["data"]["features_dir"] / f"features_nba_data_{DATASET_VERSION}.csv"
 
 # Columns that carry no predictive signal and must be removed before training
 _META_COLS = [

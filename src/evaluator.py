@@ -37,11 +37,14 @@ from sklearn.metrics import (
 
 from src.data_loader import load_splits
 from src.preprocessing import transform
+from src.loader import load_config
+
+config = load_config()
 
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-MODELS_DIR = PROJECT_ROOT / "models"
+MODELS_DIR = PROJECT_ROOT / config["models"]["models_dir"]
 
 Task = Literal["classification", "regression"]
 

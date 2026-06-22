@@ -219,3 +219,6 @@ __marimo__/
 
 # Datasets
 data/
+
+# Trained models
+notebooks/4_model_training/models_training/

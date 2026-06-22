@@ -1,6 +1,7 @@
 [data]
 raw_data_dir = "data/1_raw"
 processed_data_dir = "data/2_processed"
+features_dir = "data/3_features"
 
 [settings]
 start_season = 2000
@@ -20,3 +21,6 @@ train_end = "2018-19"
 val_start = "2019-20"
 val_end = "2021-22"
 test_start = "2022-23"
+
+[models]
+models_dir = "notebooks/4_model_training/models_training"
