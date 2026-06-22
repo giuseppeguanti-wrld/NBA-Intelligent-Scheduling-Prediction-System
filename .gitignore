@@ -221,4 +221,4 @@ __marimo__/
 data/
 
 # Trained models
-notebooks/4_model_training/models_training/
+notebooks-ML/4_model_training/models_training/
