@@ -23,4 +23,4 @@ val_end = "2021-22"
 test_start = "2022-23"
 
 [models]
-models_dir = "notebooks/4_model_training/models_training"
+models_dir = "notebooks-ML/4_model_training/models_training"
