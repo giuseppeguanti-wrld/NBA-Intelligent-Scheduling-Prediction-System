@@ -1,7 +1,7 @@
 [data]
 raw_data_dir = "data/1_raw"
 processed_data_dir = "data/2_processed"
-features_dir = "data/3_features"
+features_data_dir = "data/3_features"
 
 [settings]
 start_season = 2000
@@ -23,4 +23,4 @@ val_end = "2021-22"
 test_start = "2022-23"
 
 [models]
-models_dir = "notebooks-ML/4_model_training/models_training"
+models_dir = "notebooks-ML/models_training"

@@ -14,16 +14,23 @@ The system integrates three AI/KBS components applied to the NBA domain:
 ```
 NBA-Intelligent-Scheduling-Prediction-System/
 │
-├── notebooks-ML/                   # Supervised learning pipeline
-│   ├── 1_data_ingestion/           # Data collection via nba_api
-│   ├── 2_data_cleaning/            # Cleaning and validation
-│   ├── 3_eda/                      # Exploratory Data Analysis (univariate + bivariate)
-│   ├── 4_model_training/
-│   │   └── 06_model_training_comparison.ipynb   # Model training and comparison
-│   └── feature_engineering/        # Rolling feature construction
+├── 1_data_preparation/             # Data ingestion, assessment, cleaning
+│   ├── 01_data_ingestion.ipynb
+│   ├── 02_data_assessment.ipynb
+│   └── 03_data_cleaning.ipynb
+│
+├── 2_data_analysis/                # EDA and feature engineering
+│   ├── 01_eda_univariate.ipynb
+│   ├── 02_eda_bivariate.ipynb
+│   └── 03_feature_engineering.ipynb
+│
+├── notebooks-ML/                   # Supervised learning model training
+│   └── model_training_comparison.ipynb
+│
+├── notebooks-CSP/
+│   └── nba_scheduling_model_guide.ipynb          # TV scheduling CSP/COP with real NBA data
 │
 ├── notebooks-optimization/
-│   ├── nba_scheduling_model_guide.ipynb          # TV scheduling CSP/COP
 │   └── road_trip_astar_optimizer.ipynb           # A* road trip optimizer
 │
 ├── src/                            # Reusable Python modules
@@ -31,9 +38,9 @@ NBA-Intelligent-Scheduling-Prediction-System/
 │   └── loader.py
 │
 ├── data/
-│   ├── 1_raw/
-│   ├── 2_processed/
-│   └── 3_features/
+│   ├── 1_raw/                      # Season-level raw NBA data
+│   ├── 2_processed/                # Cleaned dataset
+│   └── 3_features/                 # Feature-engineered dataset shared by ML and CSP
 │
 ├── config.toml                     # Centralized configuration
 └── requirements.txt
@@ -46,7 +53,7 @@ NBA-Intelligent-Scheduling-Prediction-System/
 
 ### 1. ML Pipeline — NBA Outcome Prediction
 
-**Notebook**: `06_model_training_comparison.ipynb`
+**Notebook**: `notebooks-ML/model_training_comparison.ipynb`
 
 **Dataset**: 31,160 NBA games (2000-01 → 2025-26 seasons)
 
@@ -68,11 +75,13 @@ NBA-Intelligent-Scheduling-Prediction-System/
 
 ### 2. CSP/COP — NBA TV Scheduling
 
-**Notebook**: `nba_scheduling_model_guide.ipynb`
+**Notebook**: `notebooks-CSP/nba_scheduling_model_guide.ipynb`
 
 **Technique**: CP-SAT (Google OR-Tools) — CDCL + constraint propagation
 
 **Problem**: assigning $|M|$ games to $|S|$ TV slots while respecting operational and business constraints
+
+**Dataset link**: the CSP instance now uses 13 real NBA games from the 2022-23 season, loaded from the same feature-engineered dataset used by the ML pipeline (`features_nba_data_2000-01_2025-26.csv`). The `is_big_match` label is derived from `home_winrate_last_10` and `away_winrate_last_10`, making the scheduling model consistent with the project's shared data layer.
 
 **Knowledge Base**:
 
@@ -85,7 +94,7 @@ The problem belongs to the NP-hard class (scheduling with resource constraints).
 
 ### 3. A* Road Trip Optimizer
 
-**Notebook**: `road_trip_astar_optimizer.ipynb`
+**Notebook**: `notebooks-optimization/road_trip_astar_optimizer.ipynb`
 
 **Problem**: TSP on 18 nodes (NBA arenas) — finding the minimum cost road trip
 
@@ -107,10 +116,10 @@ The problem belongs to the NP-hard class (scheduling with resource constraints).
 The three modules operate on complementary aspects of the NBA domain:
 
 ```
-[CSP]  Constructs the TV schedule
-  └─→  determines which games are back-to-back
-         └─→  [ML]  Predicts game outcomes with B2B features
-                       (home_is_back_to_back, away_is_back_to_back)
+[ML Dataset]  Provides real NBA games and rolling team-form features
+  └─→  [CSP]  Builds a feasible TV schedule for selected real games
+         └─→  [ML]  Could evaluate scheduled games with predictive features
+                       (home_winrate_last_10, away_winrate_last_10, B2B indicators)
 
 [A*]   Optimizes team road trips
   └─→  road trips influence logistics costs
@@ -118,9 +127,11 @@ The three modules operate on complementary aspects of the NBA domain:
 
 ```
 
-In a fully integrated system, the CSP output would feed the ML prediction
-(given a schedule, how many back-to-back games will team X have?) and the
-A* output would inform scheduling costs (limiting back-to-backs from long road trips).
+The shared feature dataset now connects the ML and CSP modules directly: ML notebooks
+create rolling team-form features, while the CSP notebook reuses those features to
+identify high-profile games in a real 2022-23 scheduling sample. In a fully integrated
+system, the CSP output could feed ML prediction and the A* output would inform
+scheduling costs, for example by limiting back-to-backs caused by long road trips.
 
 ---
 
@@ -128,9 +139,9 @@ A* output would inform scheduling costs (limiting back-to-backs from long road t
 
 | File | Rows | Description |
 | --- | --- | --- |
-| `nba_stats_2000-01_2025-26.csv` | ~63,000 | Raw data (advanced + traditional box score) |
-| `cleaned_nba_data_2000-01_2025-26.csv` | ~31,000 | Cleaned and validated data |
-| `features_nba_data_2000-01_2025-26.csv` | 31,160 | Feature engineered + label split |
+| `data/1_raw/seasons/nba_season_*.csv` | ~63,000 | Season-level raw data collected with `nba_api` |
+| `data/2_processed/cleaned_nba_data_2000-01_2025-26.csv` | ~31,000 | Cleaned and validated data |
+| `data/3_features/features_nba_data_2000-01_2025-26.csv` | 31,160 | Feature engineered + label split; also used by the CSP notebook to load real 2022-23 games and derive `is_big_match` |
 
 Data source: `nba_api` (BoxScoreAdvancedV3, BoxScoreTraditionalV3)
 

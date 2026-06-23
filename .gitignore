@@ -225,4 +225,4 @@ data/2_processed/
 data/3_features
 
 # Trained models
-notebooks-ML/4_model_training/models_training/
+notebooks-ML/models_training/

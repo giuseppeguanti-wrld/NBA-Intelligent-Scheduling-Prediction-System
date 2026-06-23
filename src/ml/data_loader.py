@@ -25,7 +25,7 @@ end_season   = f"{end_year}-{str(end_year + 1)[-2:]}"
 DATASET_VERSION = f"{start_season}_{end_season}"
 
 # Define features path
-FEATURES_PATH = PROJECT_ROOT / config["data"]["features_dir"] / f"features_nba_data_{DATASET_VERSION}.csv"
+FEATURES_PATH = PROJECT_ROOT / config["data"]["features_data_dir"] / f"features_nba_data_{DATASET_VERSION}.csv"
 
 # Columns that carry no predictive signal and must be removed before training
 _META_COLS = [
