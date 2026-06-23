@@ -218,7 +218,11 @@ __marimo__/
 .streamlit/secrets.toml
 
 # Datasets
-data/
+data/1_raw/nba_stats_2000-01_2025-26.csv
+data/1_raw/missing_games_2000-01_2025-26.csv
+data/1_raw/metadata_2000-01_2025-26.json
+data/2_processed/
+data/3_features
 
 # Trained models
 notebooks-ML/4_model_training/models_training/

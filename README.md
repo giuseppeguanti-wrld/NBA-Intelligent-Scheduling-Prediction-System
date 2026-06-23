@@ -1,1 +1,154 @@
-# NBA-Intelligent-Scheduling-Prediction-System
+# NBA Intelligent Scheduling & Prediction System
+
+Project for the **Knowledge Engineering** course — University of Bari Aldo Moro.
+
+The system integrates three AI/KBS components applied to the NBA domain:
+**supervised learning** for outcome prediction,
+**constrained optimization** for TV scheduling,
+**informed search** for logistics planning.
+
+---
+
+## Project Structure
+
+```
+NBA-Intelligent-Scheduling-Prediction-System/
+│
+├── notebooks-ML/                   # Supervised learning pipeline
+│   ├── 1_data_ingestion/           # Data collection via nba_api
+│   ├── 2_data_cleaning/            # Cleaning and validation
+│   ├── 3_eda/                      # Exploratory Data Analysis (univariate + bivariate)
+│   ├── 4_model_training/
+│   │   └── 06_model_training_comparison.ipynb   # Model training and comparison
+│   └── feature_engineering/        # Rolling feature construction
+│
+├── notebooks-optimization/
+│   ├── nba_scheduling_model_guide.ipynb          # TV scheduling CSP/COP
+│   └── road_trip_astar_optimizer.ipynb           # A* road trip optimizer
+│
+├── src/                            # Reusable Python modules
+│   ├── ml/                         # data_loader, preprocessing, trainer, evaluator
+│   └── loader.py
+│
+├── data/
+│   ├── 1_raw/
+│   ├── 2_processed/
+│   └── 3_features/
+│
+├── config.toml                     # Centralized configuration
+└── requirements.txt
+
+```
+
+---
+
+## System Components
+
+### 1. ML Pipeline — NBA Outcome Prediction
+
+**Notebook**: `06_model_training_comparison.ipynb`
+
+**Dataset**: 31,160 NBA games (2000-01 → 2025-26 seasons)
+
+**Task**: classification (`home_win`) and regression (`point_differential`)
+
+**Temporal split** (no data leakage):
+
+| Split | Seasons | Games |
+| --- | --- | --- |
+| Train | 2000-01 → 2018-19 | 22,881 |
+| Val | 2019-20 → 2021-22 | 3,369 |
+| Test | 2022-23 → 2025-26 | 4,910 |
+
+**Models compared**: Random Forest, XGBoost, Gradient Boosting
+
+**Features**: 42 rolling features (net rating, win rate, pace, TS%, back-to-back, streak, rest days, ...)
+
+**Evaluation**: walk-forward cross-validation (5 temporal folds) → metrics such as μ ± σ
+
+### 2. CSP/COP — NBA TV Scheduling
+
+**Notebook**: `nba_scheduling_model_guide.ipynb`
+
+**Technique**: CP-SAT (Google OR-Tools) — CDCL + constraint propagation
+
+**Problem**: assigning $|M|$ games to $|S|$ TV slots while respecting operational and business constraints
+
+**Knowledge Base**:
+
+* **Variables**: $|M| \times |S|$ binary BoolVars ($x_{m,s} \in \{0,1\}$)
+* **Hard constraints**: assignment (each game in exactly 1 slot), slot capacity (≤ 1 game/slot), team conflict (no team plays twice on the same day)
+* **Business constraints**: prime-time capacity cap, no-overlap for big matches on the same channel
+* **Objective**: maximize $\sum_{m \in M^B} \sum_{s \in S^P} x_{m,s}$ (big matches in prime time)
+
+The problem belongs to the NP-hard class (scheduling with resource constraints). CP-SAT solves it via propagation + branch-and-bound on instances of this size almost instantly.
+
+### 3. A* Road Trip Optimizer
+
+**Notebook**: `road_trip_astar_optimizer.ipynb`
+
+**Problem**: TSP on 18 nodes (NBA arenas) — finding the minimum cost road trip
+
+**Costs**: Haversine distance × 1.5 + fixed logistics costs per destination
+
+**Algorithm**:
+
+* State: `(current_node, unvisited_cities_tuple)`
+* State space: $n \cdot 2^{n-1}$ = 2,359,296 theoretical states for $n=18$
+* **Heuristic**: `h(n) = MST(R) + min_dist(current, R) + min_dist(Home, R) + Σ fixed_costs(R)`
+* Admissibility and consistency formally proven
+* Memoization with `lru_cache` for MST and heuristic calls
+* Initial upper bound: nearest neighbor + 2-opt (branch & bound)
+
+---
+
+## Interconnection between components
+
+The three modules operate on complementary aspects of the NBA domain:
+
+```
+[CSP]  Constructs the TV schedule
+  └─→  determines which games are back-to-back
+         └─→  [ML]  Predicts game outcomes with B2B features
+                       (home_is_back_to_back, away_is_back_to_back)
+
+[A*]   Optimizes team road trips
+  └─→  road trips influence logistics costs
+         └─→  [CSP]  could use A* distances as weights in constraints
+
+```
+
+In a fully integrated system, the CSP output would feed the ML prediction
+(given a schedule, how many back-to-back games will team X have?) and the
+A* output would inform scheduling costs (limiting back-to-backs from long road trips).
+
+---
+
+## Dataset
+
+| File | Rows | Description |
+| --- | --- | --- |
+| `nba_stats_2000-01_2025-26.csv` | ~63,000 | Raw data (advanced + traditional box score) |
+| `cleaned_nba_data_2000-01_2025-26.csv` | ~31,000 | Cleaned and validated data |
+| `features_nba_data_2000-01_2025-26.csv` | 31,160 | Feature engineered + label split |
+
+Data source: `nba_api` (BoxScoreAdvancedV3, BoxScoreTraditionalV3)
+
+---
+
+## Installation
+
+```bash
+pip install -r requirements.txt
+
+```
+
+Main requirements: `polars`, `pandas`, `scikit-learn`, `xgboost`, `ortools`, `nba_api`, `networkx`, `folium`, `plotly`
+
+---
+
+## Knowledge Engineering Topics Covered
+
+* **Supervised learning**: classification and regression with ensemble methods, evaluation with temporal walk-forward CV
+* **Informed search**: A* with admissible and consistent heuristic (MST lower bound) on an exponential state space
+* **Constraint Satisfaction / Optimization**: binary CSP modeling, constraint propagation, combinatorial optimization with CP-SAT
