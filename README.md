@@ -11,7 +11,7 @@ The system integrates three AI/KBS components applied to the NBA domain:
 
 ## Project Structure
 
-```
+```text
 NBA-Intelligent-Scheduling-Prediction-System/
 │
 ├── 1_data_preparation/             # Data ingestion, assessment, cleaning
@@ -109,13 +109,19 @@ The problem belongs to the NP-hard class (scheduling with resource constraints).
 * Memoization with `lru_cache` for MST and heuristic calls
 * Initial upper bound: nearest neighbor + 2-opt (branch & bound)
 
+> **Note on Map Visualization**: If the interactive map (generated with `folium`) does not display correctly when opening the notebook, Jupyter might be blocking HTML/JavaScript elements for security reasons. To resolve this, you need to mark the notebook as "Trusted" by running the following command in your terminal:
+>
+> ```bash
+> jupyter trust notebooks-optimization/road_trip_astar_optimizer.ipynb
+> ```
+
 ---
 
 ## Interconnection between components
 
 The three modules operate on complementary aspects of the NBA domain:
 
-```
+```text
 [ML Dataset]  Provides real NBA games and rolling team-form features
   └─→  [CSP]  Builds a feasible TV schedule for selected real games
          └─→  [ML]  Could evaluate scheduled games with predictive features
